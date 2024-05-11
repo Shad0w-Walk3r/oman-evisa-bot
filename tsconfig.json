@@ -1,0 +1,16 @@
+{
+	"compilerOptions":
+	{
+		"target": "ES6",
+		"module": "CommonJS",
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"resolveJsonModule": true,
+		"lib": [ "ES2021" ]
+	}
+}

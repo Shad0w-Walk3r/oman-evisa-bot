@@ -1,0 +1,13 @@
+{
+		"type": "mysql",
+		"host": "127.0.0.1",
+		"port": 3306,
+		"username": "root",
+		"password": "1234qweR!@#",
+		"database": "evisa_oman",
+		"entities": [
+				"src/entities/*.ts"
+		],
+		"synchronize": true,
+		"charset": "utf8mb4_general_ci"
+}
