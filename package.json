@@ -1,7 +1,7 @@
 {
-  "name": "warmane-bot",
+  "name": "oman-evisa-bot",
   "version": "1.0.0",
-  "description": "Warmane Account Cracker",
+  "description": "Oman eVisa Bot",
   "main": "src/main.ts",
   "nodemonConfig": {
     "ignore": [
@@ -23,6 +23,7 @@
     "cheerio": "^1.0.0-rc.12",
     "cli-color": "^2.0.3",
     "moment": "^2.29.4",
+    "moment-timezone": "^0.5.45",
     "mysql2": "^3.6.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.1",

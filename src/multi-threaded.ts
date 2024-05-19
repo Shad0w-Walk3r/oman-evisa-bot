@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { default as axios } from 'axios';
 import * as color from 'cli-color';
 import * as cheerio from 'cheerio';
+import * as moment from 'moment-timezone';
 import { QueryFailedError } from 'typeorm';
 
 import { DatabaseService } from './services/database.service';
@@ -10,6 +11,28 @@ import { Gender } from './enums/gender.enum';
 import { VisaStatus } from './enums/visa-status.enum';
 
 global.sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const timeZone = 'Asia/Muscat';
+const activeStartHour = 18;
+const activeEndHour = 6;
+
+function isActiveHours()
+{
+	const now = moment.tz(timeZone);
+
+	let startActiveTime = moment.tz(timeZone).hour(activeStartHour).minute(0).second(0).millisecond(0);
+	let endActiveTime = moment.tz(timeZone).hour(activeEndHour).minute(0).second(0).millisecond(0);
+
+	if (activeEndHour < activeStartHour)
+	{
+		if (now.hour() < activeEndHour)
+			startActiveTime = startActiveTime.subtract(1, 'day');
+
+		endActiveTime = endActiveTime.add(1, 'day');
+	}
+
+	return now.isBetween(startActiveTime, endActiveTime, null, '[]');
+}
 
 async function fetchVisaDetails(visaNumber)
 {
@@ -94,7 +117,10 @@ async function bootstrap()
 	await DatabaseService.initialize();
 
 	const lastRecord = await VisaApplication.findOne({ where: {}, order: { visa_number: 'DESC' } });
-	const startVisaNumber = lastRecord ? lastRecord.visa_number + 1 : 0;
+	let startVisaNumber = lastRecord ? lastRecord.visa_number + 1 : 0;
+
+	// CTRL+C on MultiThread causes data loss
+	startVisaNumber-= 100;
 
 	const endVisaNumber = 9999999999;
 	const concurrencyLimit = 50; // Adjust the concurrency limit as needed
@@ -115,6 +141,13 @@ async function processVisaNumbers(startVisaNumber, endVisaNumber, concurrencyLim
 
 	while (currentVisaNumber < endVisaNumber)
 	{
+		if (!isActiveHours())
+		{
+			console.log(color.yellowBright(`[${moment.tz(timeZone).format('YYYY-MM-DD HH:mm:ss A')}] Outside of active hours. Sleeping for 30 minutes...`));
+			await global.sleep(1800 * 1000);
+			continue;
+		}
+
 		const visaNumbers = Array.from({ length: concurrencyLimit }, (_, i) => currentVisaNumber + i);
 		await Promise.all(visaNumbers.map(visaNumber => fetchVisaDetails(visaNumber)));
 		currentVisaNumber += concurrencyLimit;
